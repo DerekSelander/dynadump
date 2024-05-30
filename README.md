@@ -41,3 +41,14 @@ If the color hurts the eyes, a `NOCOLOR` environment variable can calm it down.
 Since this loads an image through `dlopen`, one has to be careful to prevent the image constructors from doing something bad, like crashing the program (I am looking at you, `/S*/L*/PrivateFrameworks/SpringBoard.framework`). To get around this, exception handlers are created on all callouts to load addresses. So when an image loads, an exception (a breakpoint) is hit and the exception handler steps over the code. This will prevent all constructors from executing for good or for bad. If you see something not working try using the **`NOEXC=1`** to prevent exception handlers from being setup
 
 The other shitty consequence of this design is that `dlopen` really is limited to dylibs and not standalone executables. In addition, a platform could be for iOS while being opened for Mac Catalyst. To deal with this, after `dlopen` fails for the first time, `dynadump` will copy the image of interest and patch the needed commands needed to be able to `dlopen`. This gets more fun when dealing with things like `LC_RPATH`.
+
+## Caveats
+
+Due to the different platforms and the architectures that can be run, you will need to use `arch -arm64` or `arch -arm64e` depending on the desired images to inspect. Apple will use arm64e on their stuff, while 3rd party code will be in arm64 (at the time of writing). You also need to be aware of any images that are Mac Catalyst builds as they're viewed as a different platform and will import different libraries when loaded. As a result, there's a Xcode scheme to build a Catalyst versino of `dynadump`
+
+
+Here's an example of looking at `Amazon Prime` which appears to be ported from the iPad version.
+
+<img width="1562" alt="Screenshot 2024-05-30 at 2 25 07 AM" src="https://github.com/DerekSelander/dynadump/assets/1037191/410eba7a-e708-4e3f-a9c0-ab15bbe31675">
+
+
