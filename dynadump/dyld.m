@@ -186,10 +186,25 @@ uint32_t parseFat(struct fat_header* header) {
 }
 
 
+static void write_load_command_rpath(struct mach_header_64 *header64, char **ptr, NSString *resolvedPath) {
+    unsigned long alignedSize = sizeof(struct rpath_command) +  strlen(resolvedPath.UTF8String) + 1;
+    alignedSize += (4 - alignedSize % 4 );
+    struct rpath_command rpath = {
+        .cmd = LC_RPATH,
+        .cmdsize = (uint32_t)alignedSize,
+        .path.offset = sizeof(struct rpath_command),
+    };
+    memcpy(*ptr, &rpath, sizeof(struct rpath_command));
+    strcpy(*ptr + sizeof(struct rpath_command), [resolvedPath UTF8String]);
+    *ptr += alignedSize;
+    header64->sizeofcmds += alignedSize;
+    header64->ncmds++;
+}
+
 // On iOS (but not macOS!) dlopen will fail on an executable, so copy the file, if present, flip a bit,
 // then resign it as an adhoc framework and then try again
 const char* generate_dlopen_path_backup_plan(const char* arg) {
-    
+    NSString *originalExecutable = [NSString stringWithCString:dirname((char*)arg) encoding:NSUTF8StringEncoding];
     char buffer[1024] = {};
 #if TARGET_OS_IPHONE
     snprintf(buffer, 1024, "/private/var/tmp/%d_%s", arc4random_uniform(0x1000000), basename((char*)arg));
@@ -280,7 +295,7 @@ restart:
     char* end_of_lc = (char*)header64 + sizeof(struct mach_header_64) + header64->sizeofcmds;
     char *ptr = end_of_lc;
     // attempt to add a LC_RPATH at the end that points to the OG spot
-    NSString *originalExecutable = [NSString stringWithCString:dirname((char*)arg) encoding:NSUTF8StringEncoding];
+
     NSMutableSet *set = [NSMutableSet set];
     for (NSString *rpathStr in rpaths) {
         if (![rpathStr containsString:@"@executable_path"] && ![rpathStr containsString:@"@loader_path"]) {
@@ -291,42 +306,20 @@ restart:
             continue;;
         }
         [set addObject:resolvedPath];
-        unsigned long alignedSize = sizeof(struct rpath_command) +  strlen(resolvedPath.UTF8String) + 1;
-        alignedSize += (4 - alignedSize % 4 );
-        struct rpath_command rpath = {
-            .cmd = LC_RPATH,
-            .cmdsize = (uint32_t)alignedSize,
-            .path.offset = sizeof(struct rpath_command),
-        };
-        memcpy(ptr, &rpath, sizeof(struct rpath_command));
-        strcpy(ptr + sizeof(struct rpath_command), [resolvedPath UTF8String]);
-        ptr += alignedSize;
-        header64->sizeofcmds += alignedSize;
-        header64->ncmds++;
+        write_load_command_rpath(header64, &ptr, resolvedPath);
     }
-    // need to order gauranteed
-//    NSArray <NSString*>*allPaths = [set allObjects];
-//    struct rpath_command *rpathArray = (void*)end_of_lc;
-//    for (int i = 0; i < [allPaths count]; i++) {
-//        NSString *str = [allPaths objectAtIndex:i];
-//        rpathArray[i].path.offset =  (uint32_t)((uintptr_t)ptr - (uintptr_t)&rpathArray[i]);
-//        ptr += strlen([str UTF8String]) + 1;
-//    }
     
+    // if we are opening a framework, it could be dependent on other frameworks
+    // with an rpath so add that crap in
+//    NSString *originalPath = @"/Users/username/Library/Frameworks/MyFramework.framework";
+//         NSString *newBasePath = @"/New/Base/Directory";
+
+    NSRange range = [originalExecutable rangeOfString:@"/Frameworks"];
+    if (range.location != NSNotFound) {
+        NSString *newPath = [originalExecutable stringByReplacingCharactersInRange:NSMakeRange(range.location + strlen("/Frameworks"), originalExecutable.length - range.length - range.location) withString:@""];
+        write_load_command_rpath(header64, &ptr, newPath);
+    }
     
-    
-//    struct rpath_command rpath = {
-//      .cmd = LC_RPATH,
-//      .cmdsize = sizeof(rpath),
-//      .path.offset = sizeof(struct rpath_command) + sizeof(struct dylib_command),
-//    };
-    
-    
-//    char* end_of_lc = (char*)header64 + sizeof(struct mach_header_64) + header64->sizeofcmds;
-//    memcpy(end_of_lc, &rpath, sizeof(rpath));
-//    header64->sizeofcmds += sizeof(rpath); //projected_size;
-//    header64->ncmds++;
-//
     int projected_size = sizeof(struct dylib_command) + (uint32_t)strlen(arg) + 1;
     projected_size += (4 - (projected_size % 4)); // this lc needs to be 4 byte aligned
     struct dylib_command dylib = {
@@ -344,8 +337,6 @@ restart:
     if (munmap(mapped, st.st_size) < 0) {
         perror("munmap");
     }
-    
-    
     
     close(fd);
     log_debug("writing to %s, about to codesign\n", buffer);
