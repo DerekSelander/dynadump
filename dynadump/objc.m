@@ -352,7 +352,7 @@ void dump_all_objc_classes(bool do_classlist, const char *path, const struct mac
                         if (dyld_image_header_containing_address((__bridge const void *)(cat->cls)) != (void*)header) {
                             log_out("%s// category for %s, which is declared in \"%s\"%s\n", DRED, class_getName(cat->cls), dyld_image_path_containing_address((__bridge const void *)(cat->cls)), DCOLOR_END);
                         }
-                        dump_method_description_constrained_to_header(cat->cls, header_pac);
+                        dump_method_description_constrained_to_header(cat->cls, (void*)header_pac);
                     } else {
                         log_out("%s@interface%s %s%s (%s) %s// category%s\n", DMAGENTA, DCOLOR_END, DYELLOW, class_getName(cat->cls), cat->name, DGRAY, DCOLOR_END);
                         log_out("%s@end%s\n", DYELLOW, DCOLOR_END);
@@ -613,7 +613,7 @@ void dump_method_description_constrained_to_header(id instanceOrCls, struct mach
                     continue;
                 }
             }
-            extract_and_print_method(instanceMethods[i], clsName, image_start, NO, NO);
+            extract_and_print_method(instanceMethods[i], clsName, header ? header : image_start, NO, NO);
         }
         free(instanceMethods);
     }
