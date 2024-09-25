@@ -1,11 +1,18 @@
 //
 //  SceneDelegate.m
-//  Dynamic Dump
+//  dynadump_ios
 //
-//  Created by Derek Selander on 3/14/24.
+//  Created by Derek Selander on 6/10/24.
 //
+@import UIKit;
 
-#import "SceneDelegate.h"
+@interface SceneDelegate : UIResponder <UIWindowSceneDelegate>
+
+@property (strong, nonatomic) UIWindow * window;
+
+@end
+
+
 
 @interface SceneDelegate ()
 

@@ -1,11 +1,15 @@
 //
 //  AppDelegate.m
-//  Dynamic Dump
+//  dynadump_ios
 //
-//  Created by Derek Selander on 3/14/24.
+//  Created by Derek Selander on 6/10/24.
 //
 
-#import "AppDelegate.h"
+@import UIKit;
+@interface AppDelegate : UIResponder <UIApplicationDelegate>
+@end
+
+
 
 @interface AppDelegate ()
 

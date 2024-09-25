@@ -19,14 +19,14 @@ static int copy_file(const char *sourceFile, const char *destFile) {
     int ch;
     
     log_debug("attempting to write %s -> %s\n", sourceFile, destFile);
-
+    
     // Open source file for reading
     src = fopen(sourceFile, "r");
     if (src == NULL) {
         perror("Error opening source file");
         return 1;
     }
-
+    
     // Open destination file for writing
     dst = fopen(destFile, "w");
     if (dst == NULL) {
@@ -34,16 +34,16 @@ static int copy_file(const char *sourceFile, const char *destFile) {
         fclose(src);
         return 1;
     }
-
+    
     // Copy the contents from source to destination
     while ((ch = fgetc(src)) != EOF) {
         fputc(ch, dst);
     }
-
+    
     // Close the files
     fclose(src);
     fclose(dst);
-
+    
     return 0;
 }
 
@@ -54,21 +54,21 @@ static int extract_architecture(const char *input_filename, const char *output_f
         perror("open");
         return -1;
     }
-
+    
     struct stat st;
     if (fstat(fd, &st) == -1) {
         perror("fstat");
         close(fd);
         return -1;
     }
-
+    
     void *file = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
     if (file == MAP_FAILED) {
         perror("mmap");
         close(fd);
         return -1;
     }
-
+    
     struct fat_header *fat = (struct fat_header *)file;
     if (fat->magic != FAT_MAGIC && fat->magic != FAT_CIGAM) {
         log_debug("not a fat file, using normal copy\n");
@@ -76,7 +76,7 @@ static int extract_architecture(const char *input_filename, const char *output_f
         close(fd);
         return copy_file(input_filename, output_filename);
     }
-
+    
     uint32_t nfat_arch = ntohl(fat->nfat_arch);
     struct fat_arch *archs = (struct fat_arch *)(fat + 1);
     bool success = false;
@@ -95,7 +95,7 @@ static int extract_architecture(const char *input_filename, const char *output_f
                 close(fd);
                 return -1;
             }
-
+            
             if (write(out_fd, (char *)file + offset, size) != size) {
                 perror("write");
                 close(out_fd);
@@ -103,13 +103,13 @@ static int extract_architecture(const char *input_filename, const char *output_f
                 close(fd);
                 return -1;
             }
-
+            
             close(out_fd);
             success = true;
             break;
         }
     }
-
+    
     munmap(file, st.st_size);
     close(fd);
     return success ? 0 : -1;
@@ -133,10 +133,10 @@ static struct build_version_command* get_exe_platform(void) {
 
 uint32_t parseFat(struct fat_header* header) {
     
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    
+    
     //current fat_arch
     struct fat_arch* currentArch = NULL;
     
@@ -148,7 +148,7 @@ uint32_t parseFat(struct fat_header* header) {
     
     //get local architecture
     localArch = NXGetLocalArchInfo();
-
+    
     //swap?
     if(FAT_CIGAM == header->magic)
     {
@@ -157,7 +157,7 @@ uint32_t parseFat(struct fat_header* header) {
         
         //swap (all) fat arch
         swap_fat_arch((struct fat_arch*)((unsigned char*)header
-         + sizeof(struct fat_header)), header->nfat_arch, localArch->byteorder);
+                                         + sizeof(struct fat_header)), header->nfat_arch, localArch->byteorder);
     }
     
     //first arch, starts right after fat_header
@@ -174,10 +174,10 @@ uint32_t parseFat(struct fat_header* header) {
     bestSlice->cpusubtype = my_header->cpusubtype;
     bestSlice->cputype = my_header->cputype;
 #endif
-
+    
     uint32_t offset = bestSlice->offset;
     swap_fat_arch((struct fat_arch*)((unsigned char*)header
-     + sizeof(struct fat_header)), header->nfat_arch, localArch->byteorder);
+                                     + sizeof(struct fat_header)), header->nfat_arch, localArch->byteorder);
     swap_fat_header(header, localArch->byteorder);
     
 #pragma clang diagnostic pop
@@ -295,7 +295,7 @@ restart:
     char* end_of_lc = (char*)header64 + sizeof(struct mach_header_64) + header64->sizeofcmds;
     char *ptr = end_of_lc;
     // attempt to add a LC_RPATH at the end that points to the OG spot
-
+    
     NSMutableSet *set = [NSMutableSet set];
     for (NSString *rpathStr in rpaths) {
         if (![rpathStr containsString:@"@executable_path"] && ![rpathStr containsString:@"@loader_path"]) {
@@ -311,9 +311,9 @@ restart:
     
     // if we are opening a framework, it could be dependent on other frameworks
     // with an rpath so add that crap in
-//    NSString *originalPath = @"/Users/username/Library/Frameworks/MyFramework.framework";
-//         NSString *newBasePath = @"/New/Base/Directory";
-
+    //    NSString *originalPath = @"/Users/username/Library/Frameworks/MyFramework.framework";
+    //         NSString *newBasePath = @"/New/Base/Directory";
+    
     NSRange range = [originalExecutable rangeOfString:@"/Frameworks"];
     if (range.location != NSNotFound) {
         NSString *newPath = [originalExecutable stringByReplacingCharactersInRange:NSMakeRange(range.location + strlen("/Frameworks"), originalExecutable.length - range.length - range.location) withString:@""];
@@ -323,11 +323,11 @@ restart:
     int projected_size = sizeof(struct dylib_command) + (uint32_t)strlen(arg) + 1;
     projected_size += (4 - (projected_size % 4)); // this lc needs to be 4 byte aligned
     struct dylib_command dylib = {
-      .cmd = LC_ID_DYLIB,
-      .cmdsize = projected_size,
-      .dylib = {
-          .name.offset = sizeof(struct dylib_command)
-      }
+        .cmd = LC_ID_DYLIB,
+        .cmdsize = projected_size,
+        .dylib = {
+            .name.offset = sizeof(struct dylib_command)
+        }
     };
     memcpy(ptr, &dylib, sizeof(dylib));
     strcpy(ptr + sizeof(dylib), arg);
@@ -414,6 +414,7 @@ const char* dsc_image_as_name(const char *name) {
     __block const char *outparam = NULL;
     dsc_iterate_images(^(int idx, dyld_image_t image, bool *stop) {
         const char * cur = my_dyld_image_get_installname(image);
+        //    log_debug("image is: \"%s\"\n", basename((char*)cur));
         if (!strcmp(name, basename((char*)cur))) {
             outparam = cur;
             *stop = true;
@@ -428,7 +429,7 @@ void dump_dsc_images(void) {
         return;
     }
     dsc_iterate_images(^(int idx, dyld_image_t image, bool *stop) {
-         log_out("%s%5lu%s %s%s%s\n", DYELLOW, (unsigned long)idx, DCOLOR_END, DCYAN, my_dyld_image_get_installname(image), DCOLOR_END);
+        log_out("%s%5lu%s %s%s%s\n", DYELLOW, (unsigned long)idx, DCOLOR_END, DCYAN, my_dyld_image_get_installname(image), DCOLOR_END);
     });
 }
 

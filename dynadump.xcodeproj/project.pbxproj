@@ -15,8 +15,13 @@
 		BF6ABEFA2BA4149E00419D5A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF6ABEF92BA4149E00419D5A /* Assets.xcassets */; };
 		BF6ABEFD2BA4149E00419D5A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF6ABEFB2BA4149E00419D5A /* LaunchScreen.storyboard */; };
 		BF6ABF002BA4149E00419D5A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = BF6ABEFF2BA4149E00419D5A /* main.m */; };
-		BF6ABF042BA414A800419D5A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = BF7559EA2BA2AFC500F887DF /* main.m */; };
 		BF7559EB2BA2AFC500F887DF /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = BF7559EA2BA2AFC500F887DF /* main.m */; };
+		BF7EA0122C17C45B004B66EC /* exception_handler.m in Sources */ = {isa = PBXBuildFile; fileRef = BFA4AD6A2C0768110031E582 /* exception_handler.m */; };
+		BF7EA0132C17C45E004B66EC /* dyld.m in Sources */ = {isa = PBXBuildFile; fileRef = BFA4AD672C0761C50031E582 /* dyld.m */; };
+		BF7EA0142C17C461004B66EC /* objc.m in Sources */ = {isa = PBXBuildFile; fileRef = BFA4AD642C0761880031E582 /* objc.m */; };
+		BF7EA0152C17C464004B66EC /* codesigning.m in Sources */ = {isa = PBXBuildFile; fileRef = BFA4AD5E2C06E4220031E582 /* codesigning.m */; };
+		BF7EA0162C17C468004B66EC /* misc.c in Sources */ = {isa = PBXBuildFile; fileRef = BFA4AD612C06E4AC0031E582 /* misc.c */; };
+		BF7EA0192C180484004B66EC /* DetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BF7EA0182C180484004B66EC /* DetailViewController.m */; };
 		BFA4AD5F2C06E4220031E582 /* codesigning.m in Sources */ = {isa = PBXBuildFile; fileRef = BFA4AD5E2C06E4220031E582 /* codesigning.m */; };
 		BFA4AD622C06E4AC0031E582 /* misc.c in Sources */ = {isa = PBXBuildFile; fileRef = BFA4AD612C06E4AC0031E582 /* misc.c */; };
 		BFA4AD652C0761880031E582 /* objc.m in Sources */ = {isa = PBXBuildFile; fileRef = BFA4AD642C0761880031E582 /* objc.m */; };
@@ -56,9 +61,7 @@
 
 /* Begin PBXFileReference section */
 		BF6ABEEB2BA4149D00419D5A /* Dynamic Dump.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dynamic Dump.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		BF6ABEED2BA4149D00419D5A /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		BF6ABEEE2BA4149D00419D5A /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		BF6ABEF02BA4149D00419D5A /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
 		BF6ABEF12BA4149D00419D5A /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
 		BF6ABEF32BA4149D00419D5A /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		BF6ABEF42BA4149D00419D5A /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
@@ -69,6 +72,8 @@
 		BF6ABEFF2BA4149E00419D5A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		BF7559E72BA2AFC500F887DF /* dynadump */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = dynadump; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF7559EA2BA2AFC500F887DF /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		BF7EA0182C180484004B66EC /* DetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DetailViewController.m; sourceTree = "<group>"; };
+		BF7EA01A2C18052B004B66EC /* DetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DetailViewController.h; sourceTree = "<group>"; };
 		BFA4AD5D2C06E4220031E582 /* codesigning.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = codesigning.h; sourceTree = "<group>"; };
 		BFA4AD5E2C06E4220031E582 /* codesigning.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = codesigning.m; sourceTree = "<group>"; };
 		BFA4AD602C06E4AC0031E582 /* misc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = misc.h; sourceTree = "<group>"; };
@@ -110,12 +115,12 @@
 		BF6ABEEC2BA4149D00419D5A /* Dynamic Dump */ = {
 			isa = PBXGroup;
 			children = (
-				BF6ABEED2BA4149D00419D5A /* AppDelegate.h */,
 				BF6ABEEE2BA4149D00419D5A /* AppDelegate.m */,
-				BF6ABEF02BA4149D00419D5A /* SceneDelegate.h */,
 				BF6ABEF12BA4149D00419D5A /* SceneDelegate.m */,
 				BF6ABEF32BA4149D00419D5A /* ViewController.h */,
 				BF6ABEF42BA4149D00419D5A /* ViewController.m */,
+				BF7EA0182C180484004B66EC /* DetailViewController.m */,
+				BF7EA01A2C18052B004B66EC /* DetailViewController.h */,
 				BF6ABEF62BA4149D00419D5A /* Main.storyboard */,
 				BF6ABEF92BA4149E00419D5A /* Assets.xcassets */,
 				BF6ABEFB2BA4149E00419D5A /* LaunchScreen.storyboard */,
@@ -151,13 +156,13 @@
 				BFA4AD6A2C0768110031E582 /* exception_handler.m */,
 				BFA4AD672C0761C50031E582 /* dyld.m */,
 				BFA4AD642C0761880031E582 /* objc.m */,
+				BFA4AD5E2C06E4220031E582 /* codesigning.m */,
 				BFA4AD612C06E4AC0031E582 /* misc.c */,
 				BFA4AD692C0768110031E582 /* exception_handler.h */,
 				BFA4AD662C0761C50031E582 /* dyld.h */,
 				BFA4AD632C0761880031E582 /* objc.h */,
 				BFA4AD602C06E4AC0031E582 /* misc.h */,
 				BFA4AD5D2C06E4220031E582 /* codesigning.h */,
-				BFA4AD5E2C06E4220031E582 /* codesigning.m */,
 			);
 			path = dynadump;
 			sourceTree = "<group>";
@@ -271,11 +276,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF6ABF042BA414A800419D5A /* main.m in Sources */,
+				BF7EA0122C17C45B004B66EC /* exception_handler.m in Sources */,
 				BF6ABEF52BA4149D00419D5A /* ViewController.m in Sources */,
+				BF7EA0152C17C464004B66EC /* codesigning.m in Sources */,
+				BF7EA0132C17C45E004B66EC /* dyld.m in Sources */,
+				BF7EA0162C17C468004B66EC /* misc.c in Sources */,
+				BF7EA0192C180484004B66EC /* DetailViewController.m in Sources */,
 				BF6ABEEF2BA4149D00419D5A /* AppDelegate.m in Sources */,
 				BF6ABF002BA4149E00419D5A /* main.m in Sources */,
 				BF6ABEF22BA4149D00419D5A /* SceneDelegate.m in Sources */,
+				BF7EA0142C17C461004B66EC /* objc.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -332,15 +342,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = H4U46V6494;
+				DEVELOPMENT_TEAM = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 					"SHARED_DYNAMIC_DUMP=1",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "${PROJECT_DIR}";
 				INFOPLIST_FILE = "Dynamic Dump/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -357,6 +368,7 @@
 				OTHER_LDFLAGS = "-Wl,-U,__dyld_debugger_notification";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.company.Dynamic-Dump";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -368,14 +380,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = H4U46V6494;
+				DEVELOPMENT_TEAM = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"SHARED_DYNAMIC_DUMP=1",
 					"USE_CONSOLE=1",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "${PROJECT_DIR}";
 				INFOPLIST_FILE = "Dynamic Dump/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -391,6 +404,7 @@
 				OTHER_LDFLAGS = "-Wl,-U,__dyld_debugger_notification";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.company.Dynamic-Dump";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -524,7 +538,7 @@
 				);
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = H4U46V6494;
-				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = macosx;
@@ -543,7 +557,7 @@
 				);
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = H4U46V6494;
-				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = macosx;
 				SUPPORTS_MACCATALYST = YES;

@@ -69,7 +69,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "dump &quot;/Applications/Prime Video.app/Contents/MacOS/Prime Video&quot;"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "sign /tmp/yolo"
@@ -80,8 +80,8 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "dump CoreFoundation"
-            isEnabled = "NO">
+            argument = "dump Foundation"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "dump /usr/local/bin/mobdevim"
@@ -108,9 +108,9 @@
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "NOEXC"
-            value = ""
-            isEnabled = "YES">
+            key = "USEEXC"
+            value = "1"
+            isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "VERBOSE"

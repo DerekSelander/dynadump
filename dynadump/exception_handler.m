@@ -35,7 +35,7 @@ static void thread_walkback_frames_to_safe_code(thread_t thread) {
     void* lr = (void*)(state.__lr);
     uintptr_t stripped_pc = (uintptr_t)(void*)(state.__pc);
     uintptr_t stripped_lr = (uintptr_t)(void*)(state.__lr);
-
+    
 #endif
     dladdr((void*)stripped_pc, &pinfo);
     dladdr((void*)stripped_lr, &linfo);
@@ -43,7 +43,7 @@ static void thread_walkback_frames_to_safe_code(thread_t thread) {
 #ifdef __arm64__
     
 #elif __x86_64__
-    TODO: implement geriatric CPU arch
+TODO: implement geriatric CPU arch
 #endif
     
     arm_debug_state64_t dbg = {};
@@ -68,7 +68,7 @@ static void thread_walkback_frames_to_safe_code(thread_t thread) {
     
     
     for (uint8_t i = 0; i < constructor_addresses_count; i++) {
-
+        
         if (constructor_addresses[i] == stripped_pc) {
             if (g_debug) {
                 log_out("found caller 0x%012lx\n", constructor_addresses[i])
@@ -129,13 +129,8 @@ static void thread_walkback_frames_to_safe_code(thread_t thread) {
 }
 
 void* server_thread(void *arg) {
-    
     pthread_setname_np("Exception Handler");
     thread_t thread = (thread_t)(uintptr_t)arg;
-    mach_port_options_t options = {.flags = MPO_INSERT_SEND_RIGHT};
-    HANDLE_ERR(mach_port_construct(mach_task_self(), &options, 0, &exc_port));
-    HANDLE_ERR(thread_set_exception_ports(thread, EXC_MASK_ALL, exc_port, EXCEPTION_DEFAULT|MACH_EXCEPTION_CODES, THREAD_STATE_NONE));
-    
 #if defined(__arm64__)
     arm_debug_state64_t dbg = {};
     mach_msg_type_number_t cnt = ARM_DEBUG_STATE64_COUNT;
@@ -144,13 +139,17 @@ void* server_thread(void *arg) {
         dbg.__bvr[i] = (__int64_t)constructor_addresses[i];
         dbg.__bcr[i] = S_USER|BCR_ENABLE|BCR_BAS;
     }
-    HANDLE_ERR(thread_set_state(thread, ARM_DEBUG_STATE64, (thread_state_t)&dbg, cnt));
+    HANDLE_ERR(thread_set_state(thread, ARM_DEBUG_STATE64, (thread_state_t)&dbg, ARM_DEBUG_STATE64_COUNT));
 #elif defined(__x86_64__)
     
 #else
 #error "da fuck you compiling?"
 #endif
     
+    
+    mach_port_options_t options = {.flags = MPO_INSERT_SEND_RIGHT};
+    HANDLE_ERR(mach_port_construct(mach_task_self(), &options, 0, &exc_port));
+    HANDLE_ERR(thread_set_exception_ports(thread, EXC_MASK_ALL, exc_port, EXCEPTION_DEFAULT|MACH_EXCEPTION_CODES, THREAD_STATE_NONE));
     
     dispatch_group_leave(g_dispatch_group);
     
@@ -195,6 +194,9 @@ void* server_thread(void *arg) {
 
 
 void safe_dlopen_cleanup(void) {
+    if (!USE_EXECPTION_HANDLER()) {
+        return;
+    }
 #if defined(__arm64__)
     arm_debug_state64_t dbg = {};
     mach_msg_type_number_t cnt = ARM_DEBUG_STATE64_COUNT;

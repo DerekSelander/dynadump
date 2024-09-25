@@ -78,7 +78,7 @@
 
 
 /*
-  We need to find all the locations that constructors are called and map them so we can catch them if we need to use the safe dlopen
+ We need to find all the locations that constructors are called and map them so we can catch them if we need to use the safe dlopen
  */
 __attribute__((constructor)) static void grab_caller_address(void) {
     void* return_address = strip_pac((void*)__builtin_return_address(0)) - ARM64_OPCODE_SIZE;
@@ -135,24 +135,24 @@ void dlopen_n_dump_objc_classes(const char *_arg, const char*clsName, bool do_cl
     } else if (handle) {
         path = strdup(arg);
     } else {
-        path = dsc_image_as_name(arg);
+        path = dsc_image_as_name(_arg);
         log_debug("changing arg %s -> %s\n", arg, path);
         // if we can't find a path we'll just start with the OG and fail later if needed
         if (!path) {
             path = strdup(arg);
         }
     }
-        
+    
     // use stderr, so everything else is still grep-able
     fprintf(stderr, "%s%s%s\n", DCYAN, path, DCOLOR_END);
 #if 0
 #warning you've got normal dlopen going, derek
     handle = dlopen(path, RTLD_NOW);
 #else
-    if (getenv("NOEXC")) {
-        handle = dlopen(path, RTLD_NOW);
-    } else {
+    if (USE_EXECPTION_HANDLER()) {
         handle = safe_dlopen(path);
+    } else {
+        handle = dlopen(path, RTLD_NOW);
     }
 #endif
     
@@ -195,14 +195,14 @@ void dlopen_n_dump_objc_classes(const char *_arg, const char*clsName, bool do_cl
     // remove breakpoints
     safe_dlopen_cleanup();
     
-
+    
     // iterate loaded images in process looking for the dlopen's start address
     task_dyld_info_data_t info;
     mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
     HANDLE_ERR(task_info(mach_task_self(), TASK_DYLD_INFO, (task_info_t)&info, &count));
     struct dyld_all_image_infos *all_image_infos = (void*)info.all_image_info_addr;
     struct dyld_image_info *imageArray = (void*)all_image_infos->infoArray;
-
+    
     char resolved[PATH_MAX] = {};
     realpath(path, resolved);
     for (uint i = 0; i < all_image_infos->infoArrayCount; i++) {
@@ -225,7 +225,7 @@ void dlopen_n_dump_objc_classes(const char *_arg, const char*clsName, bool do_cl
             }
         }
     }
-        
+    
     if (clsName) {
         Class cls = objc_getClass(clsName);
         dump_objc_class_info(cls);
@@ -233,9 +233,10 @@ void dlopen_n_dump_objc_classes(const char *_arg, const char*clsName, bool do_cl
         dump_all_objc_classes(do_classlist, path, header);
     }
     
-    if (path) {
-        free((void*)path);
-    }
+    // TODO potential leak for some cases
+    //    if (path) {
+    //        free((void*)path);
+    //    }
 }
 
 __attribute__((constructor)) static void setup(void) {
@@ -271,7 +272,7 @@ void print_help(void) {
     log_out("\tNOCOLOR - Forces no color, color will be on by default unless piped\n");
     log_out("\tCOLOR   - Forces color, regardless of stdout destination\n");
     log_out("\tVERBOSE - Verbose output\n");
-    log_out("\tNOEXC   - Don't use an exception handler (on in x86_64)\n");
+    log_out("\tUSEEXC  - Use an exception handler (off by default in x86_64)\n");
     log_out("\tDEBUG   - Used internally to hunt down f ups\n");
     
     exit(1);
@@ -285,9 +286,6 @@ int main(int argc, const char * argv[]) {
     if (argc == 1) {
         print_help();
     }
-#if defined(__x86_64__)
-    setenv("NOEXC", "meow", 1);
-#endif
     
     if (g_debug) {
         setenv("DYLD_PRINT_INITIALIZERS", "1", 1);
@@ -299,7 +297,7 @@ int main(int argc, const char * argv[]) {
         if (argc == 2) {
             dump_dsc_images();
         } else {
-             if (argc == 3) {
+            if (argc == 3) {
                 dlopen_n_dump_objc_classes(argv[2], NULL, true);
             } else if (argc == 4) {
                 dlopen_n_dump_objc_classes(argv[2], argv[3], true);
@@ -332,11 +330,11 @@ int main(int argc, const char * argv[]) {
         }
         
         // hack just for debugging purposes
-         struct big_method_t {
+        struct big_method_t {
             SEL name;
             const char *types;
             void* imp;
-         } m = {
+        } m = {
             .types = argv[2],
             .name = sel_registerName(""),
         };

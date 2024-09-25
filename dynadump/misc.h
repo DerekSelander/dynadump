@@ -57,7 +57,7 @@ extern int g_verbose;
 #define log_out(S, ...)   fprintf(stdout, S, ##__VA_ARGS__);
 #define log_out_verbose(S, ...)  if (g_verbose) { fprintf(stdout, S, ##__VA_ARGS__); }
 #define log_error(S, ...)  { fprintf(stderr, "ERR: %s:%5d", __FILE__, __LINE__);} fprintf(stderr, S, ##__VA_ARGS__);
-#define log_debug(S, ...) if (g_debug) { fprintf(stdout, "FILE:%s,%4d: " S, __FILE__, __LINE__, ##__VA_ARGS__); }
+#define log_debug(S, ...) if (g_debug) { fprintf(stderr, "%s:%-4d  " S, __FUNCTION__, __LINE__, ##__VA_ARGS__); }
 #endif
 
 /// arm64 debug stuff
@@ -115,7 +115,7 @@ extern __attribute__((weak)) const char* dyld_image_path_containing_address(cons
 // DYLD_MACOS_12_ALIGNED_SPI
 extern __attribute__((weak)) void dyld_shared_cache_for_each_image(dyld_shared_cache_t cache, void (^block)(dyld_image_t image));
 
- // Exists in Mac OS X 10.11 and later
+// Exists in Mac OS X 10.11 and later
 extern __attribute__((weak)) const char* dyld_shared_cache_file_path(void);
 
 // DYLD_MACOS_12_ALIGNED_SPI
@@ -163,4 +163,6 @@ typedef struct {
 
 void* strip_pac(void* addr);
 
+
+#define USE_EXECPTION_HANDLER() getenv("USEEXC")
 #endif /* misc_h */
