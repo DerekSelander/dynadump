@@ -188,7 +188,7 @@ int get_object_type_description(const char *typeEncoding, char *buffer) {
     } else if (!strcmp(typeEncoding, "#")) {
         do_copy_n_return("Class");
     } else if (!strcmp(typeEncoding, "@?")) {
-        do_copy_n_return("^block");
+        do_copy_n_return("id /*^block*/");
     }
     
     size_t len = strlen(typeEncoding);
