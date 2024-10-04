@@ -8,7 +8,8 @@
 @import Foundation;
 @import MachO;
 @import ObjectiveC;
-#include "objc.h"
+#import  "objc.h"
+
 extern Class objc_opt_class(id _Nullable obj);
 
 /*********************************************************************/
@@ -24,7 +25,7 @@ static uintptr_t get_cls_isa(Class cls) {
     return (uintptr_t)strip_pac((void*)isa);
 }
 
-
+static 
 void extract_and_print_method(Method method, const char *name, uintptr_t image_start, BOOL isClassMethod, BOOL pretendMethod) {
     char buffer[GOOD_E_NUFF_BUFSIZE];
     buffer[0] = '\0';
@@ -81,7 +82,66 @@ void extract_and_print_method(Method method, const char *name, uintptr_t image_s
     }
 }
 
+#define append_comma_if_needed() if (attributeCount > 1 &&  i > 1) { append_content(", ") }
+static
+int get_property_description(objc_property_t *property, char *buffer) {
+    uint buff_offset = 0;
+    unsigned int attributeCount = 0;
+    objc_property_attribute_t *attributes = property_copyAttributeList(*property, &attributeCount);
+    
+    append_content("%s@property ", DGREEN);
+    if (attributeCount >= 2) {
+        append_content("(")
+    }
+    for (int i = attributeCount - 1; i >= 0; i--) {
+        const char *name = attributes[i].name;
+        
+        if (i == 0 && attributeCount >= 2) {
+            append_content(")%s ", DCOLOR_END);
+        }
+        if (!strcmp(name, "R")) {
+            append_content("readonly");
+            append_comma_if_needed();
+        } else if (!strcmp(name, "C")) {
+            append_content("copy");
+            append_comma_if_needed();
+        } else if (!strcmp(name, "&")) {
+            append_content("retain");
+            append_comma_if_needed();
+        } else if (!strcmp(name, "N")) {
+            append_content("nonatomic");
+            append_comma_if_needed();
+        } else if (!strcmp(name, "G")) {
+            append_content("getter=%s", &name[2]);
+            append_comma_if_needed();
+        } else if (!strcmp(name, "S")) {
+            append_content("setter=%s", &name[2]);
+            append_comma_if_needed();
+        } else if (!strcmp(name, "D")) {
+            append_content("assign");
+            append_comma_if_needed();
+        } else if (!strcmp(name, "W")) {
+            append_content("weak");
+            append_comma_if_needed();
+        } else if (!strcmp(name, "T")) {
+            char tmp[GOOD_E_NUFF_BUFSIZE];
+            get_object_type_description(attributes->value, tmp);
+            append_content("%s%s%s ", DRED, tmp, DCOLOR_END);
+        } else if (!strcmp(name, "V")) {
+            // Ignore this one, it's called a 'oneway'
+        } else {
+            log_debug("/*  %d TODO DEREK S */ %s", __LINE__, &name[0])
+        }
+        
+    }
+    append_content("%s%s%s;\n", DBOLD, property_getName(*property), DCOLOR_END);
+    free(attributes);
+    return 0;
+}
 
+/*********************************************************************/
+# pragma mark - public -
+/*********************************************************************/
 
 int get_object_type_description(const char *typeEncoding, char *buffer) {
     int buff_offset = 0;
@@ -207,69 +267,25 @@ int get_object_type_description(const char *typeEncoding, char *buffer) {
     return 1;
 }
 
-static
-int get_property_description(objc_property_t *property, char *buffer) {
-#define append_comma_if_needed() if (i != i) { append_content(", ") }
-    uint buff_offset = 0;
-    unsigned int attributeCount = 0;
-    objc_property_attribute_t *attributes = property_copyAttributeList(*property, &attributeCount);
-    
-    append_content("%s@property ", DGREEN);
-    if (attributeCount >= 2) {
-        append_content("(")
-    }
-    for (int i = attributeCount - 1; i >= 0; i--) {
-        const char *name = attributes[i].name;
-        
-        if (i == 0 && attributeCount >= 2) {
-            append_content(")%s ", DCOLOR_END);
-        }
-        if (!strcmp(name, "R")) {
-            append_content("readonly");
-            append_comma_if_needed();
-        } else if (!strcmp(name, "C")) {
-            append_content("copy");
-            append_comma_if_needed();
-        } else if (!strcmp(name, "&")) {
-            append_content("retain");
-            append_comma_if_needed();
-        } else if (!strcmp(name, "N")) {
-            append_content("nonatomic");
-            append_comma_if_needed();
-        } else if (!strcmp(name, "G")) {
-            append_content("getter=%s ", &name[2]);
-            append_comma_if_needed();
-        } else if (!strcmp(name, "S")) {
-            append_content("setter=%s", &name[2]);
-            append_comma_if_needed();
-        } else if (!strcmp(name, "D")) {
-            append_content("assign ");
-            append_comma_if_needed();
-        } else if (!strcmp(name, "W")) {
-            append_content("weak ");
-            append_comma_if_needed();
-        } else if (!strcmp(name, "T")) {
-            char tmp[GOOD_E_NUFF_BUFSIZE];
-            get_object_type_description(attributes->value, tmp);
-            append_content("%s%s%s ", DRED, tmp, DCOLOR_END);
-        } else if (!strcmp(name, "V")) {
-            // Ignore this one, it's called a 'oneway'
-        } else {
-            log_debug("/*  %d TODO DEREK S */ %s", __LINE__, &name[0])
-        }
-        
-    }
-    append_content("%s%s%s\n", DBOLD, property_getName(*property), DCOLOR_END);
-    free(attributes);
-    return 0;
-}
-
-
-
-/*********************************************************************/
-# pragma mark - public -
-/*********************************************************************/
-
+//bool ptr_is_block_class(uintptr_t ptr) {
+//    static uintptr_t block_classes[6] = {};
+//    if (!block_classes[0]) {
+//        block_classes[0] = (uintptr_t)objc_getClass("__NSStackBlock__");
+//        block_classes[1] = (uintptr_t)objc_getClass("__NSMallocBlock__");
+//        block_classes[2] = (uintptr_t)objc_getClass("__NSAutoBlock__");
+//        block_classes[3] = (uintptr_t)objc_getClass("__NSFinalizingBlock__");
+//        block_classes[4] = (uintptr_t)objc_getClass("__NSGlobalBlock__");
+//        block_classes[5] = (uintptr_t)objc_getClass("__NSBlockVariable__");
+//    };
+//    // ~7 needed because isa's can pack bits AND have ptrauth
+//    uintptr_t resolved = (uintptr_t)ptrauth_strip((void*)ptr, ptrauth_key_objc_isa_pointer) & ~7LL;
+//    for (int i = 0; i < sizeof(block_classes)/sizeof(void*); i++) {
+//        if (resolved == block_classes[i]) {
+//            return true;
+//        }
+//    }
+//    return false;
+//}
 
 void dump_all_objc_classes(bool do_classlist, const char *path, const struct mach_header_64* header_pac) {
     
