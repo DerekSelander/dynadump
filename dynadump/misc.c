@@ -12,6 +12,7 @@
 
 bool g_debug = false;
 bool g_color = true;
+bool g_use_exc = false;
 int g_verbose = 0;
 
 // DYLD_MACOS_12_ALIGNED_SPI

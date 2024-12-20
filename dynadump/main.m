@@ -242,6 +242,7 @@ void dlopen_n_dump_objc_classes(const char *_arg, const char*clsName, bool do_cl
 __attribute__((constructor)) static void setup(void) {
     g_color = getenv("NOCOLOR") ? false : true;
     g_debug = getenv("DEBUG") ? true : false;
+    g_use_exc = getenv("USEEXC") ? true : false;
     g_verbose = getenv("VERBOSE") ? 5 : 0;
     
     // if piping remove color
@@ -268,25 +269,48 @@ void print_help(void) {
     log_out("\tsign  $DYLIB        attempts to sign a dylib in place\n");
     log_out("\tlist  $DYLIB $CLASS Same cmd as above (convenience for listing then dumping)\n");
     
+    
     log_out("\n\tEnvironment Variables:\n");
-    log_out("\tNOCOLOR - Forces no color, color will be on by default unless piped\n");
-    log_out("\tCOLOR   - Forces color, regardless of stdout destination\n");
-    log_out("\tVERBOSE - Verbose output\n");
-    log_out("\tUSEEXC  - Use an exception handler (off by default in x86_64)\n");
-    log_out("\tDEBUG   - Used internally to hunt down f ups\n");
+    log_out("\tNOCOLOR, (-c) - Forces no color, color will be on by default unless piped\n");
+    log_out("\tCOLOR         - Forces color, regardless of stdout destination\n");
+    log_out("\tVERBOSE  (-v) - Verbose output\n");
+    log_out("\tUSEEXC   (-D) - Use an exception handler (off by default in x86_64)\n");
+    log_out("\tDEBUG    (-g) - Used internally to hunt down f ups\n");
     
     exit(1);
 }
 
-int main(int argc, const char * argv[]) {
-    
-    void* handle =  dlopen(argv[0], RTLD_NOLOAD);
-    uintptr_t resolved = (uintptr_t)handle ^ (uintptr_t)&_mh_execute_header;
-    
+int main(int argc, char * const  argv[]) {
+    int opt;
     if (argc == 1) {
         print_help();
     }
     
+    while ((opt = getopt(argc, argv, "vcgVD")) != -1) {
+        switch (opt) {
+            case 'v':
+                g_verbose = 5;
+                break;
+            case 'g':
+                g_debug = true;
+                break;
+            case 'c':
+                g_color = false;
+                break;
+            case 'D':
+                g_use_exc = true;
+                break;
+            case 'V':
+                print_help();
+                exit(1);
+            default: /* '?' */
+                log_error("bad argument\n");
+                return 1;
+        }
+    }
+    if (getenv("COLOR")) {
+        g_color = true;
+    }
     if (g_debug) {
         setenv("DYLD_PRINT_INITIALIZERS", "1", 1);
         setenv("DYLD_PRINT_BINDINGS", "1", 1);

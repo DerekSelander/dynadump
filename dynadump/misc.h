@@ -163,6 +163,6 @@ typedef struct {
 
 void* strip_pac(void* addr);
 
-
-#define USE_EXECPTION_HANDLER() getenv("USEEXC")
+extern bool g_use_exc;
+#define USE_EXECPTION_HANDLER() g_use_exc
 #endif /* misc_h */
